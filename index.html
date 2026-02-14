@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分手适应力评估</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f5f7fa; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background-color: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 30px; text-align: center;
+        }
+        header h1 { font-size: 2.2rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 20px; }
+        .disclaimer {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid #ffcc00; padding: 15px; border-radius: 5px;
+            text-align: left; margin-top: 20px; font-size: 0.95rem;
+        }
+        
+        .card { background-color: white; border-radius: 10px; padding: 30px; margin: 20px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); }
+        .hidden { display: none !important; }
+        
+        .options-info {
+            display: flex; flex-wrap: wrap; justify-content: space-between; margin: 25px 0; gap: 10px;
+        }
+        .option-item {
+            flex: 1; min-width: 120px; background-color: #f0f5ff; padding: 12px; border-radius: 8px; text-align: center;
+        }
+        .option-label {
+            display: inline-block; width: 30px; height: 30px; background-color: #667eea;
+            color: white; border-radius: 50%; line-height: 30px; margin-right: 10px; font-weight: bold;
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 14px 28px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-primary { background-color: #667eea; color: white; }
+        .btn-primary:hover { background-color: #5a67d8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); }
+        .btn-secondary { background-color: #f0f5ff; color: #667eea; border: 2px solid #667eea; }
+        .btn-secondary:hover { background-color: #e1e9ff; }
+        .actions { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
+        
+        #questions-container { margin: 25px 0; }
+        .question { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #eee; }
+        .question:last-child { border-bottom: none; }
+        .question-text { font-size: 1.1rem; margin-bottom: 15px; color: #333; font-weight: 600; }
+        .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .option {
+            background-color: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 12px 15px;
+            cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center;
+        }
+        .option:hover { background-color: #e9ecef; }
+        .option.selected { background-color: #e0e7ff; border-color: #667eea; color: #667eea; }
+        .option input { margin-right: 10px; }
+        .navigation {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 30px;
+            padding-top: 20px; border-top: 1px solid #eee;
+        }
+        #page-info { font-weight: 600; color: #667eea; }
+        
+        .progress-container { margin: 20px 0; }
+        .progress-bar { height: 10px; background-color: #e9ecef; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 5px; transition: width 0.5s ease; }
+        .progress-text { text-align: center; margin-top: 10px; font-weight: 600; color: #667eea; }
+        
+        .score-category { margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; }
+        .score-category h3 { margin-bottom: 15px; color: #667eea; font-size: 1.4rem; }
+        .score-bar { height: 25px; background-color: #e9ecef; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+        .score-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 12px; transition: width 1.5s ease; }
+        .score-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .score-details p { margin: 0; font-weight: 600; }
+        
+        .adapt-card {
+            border-radius: 10px; padding: 25px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        .adapt-card:hover { transform: translateY(-5px); }
+        .adapt-card h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 1.4rem; }
+        
+        .level-low { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 6px solid #dc3545; }
+        .level-moderate { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 6px solid #ffc107; }
+        .level-high { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 6px solid #28a745; }
+        
+        #interpretation, #recommendations { margin-top: 30px; padding: 25px; background-color: #f8f9fa; border-radius: 10px; }
+        #interpretation h3, #recommendations h3 { margin-bottom: 15px; color: #667eea; display: flex; align-items: center; gap: 10px; }
+        .recommendation-item { background-color: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #667eea; }
+        
+        footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 0.9rem; line-height: 1.5; border-top: 1px solid #eee; }
+        
+        @media (max-width: 768px) {
+            .container { border-radius: 0; }
+            header h1 { font-size: 1.8rem; flex-direction: column; gap: 10px; }
+            .card { padding: 20px; margin: 10px; }
+            .options { grid-template-columns: 1fr; }
+            .score-details { grid-template-columns: 1fr; gap: 10px; }
+            .actions { flex-direction: column; }
+            .btn-primary, .btn-secondary { width: 100%; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heart-broken"></i> 分手适应力评估</h1>
+            <p class="subtitle">了解分手后的心理恢复状态与适应水平</p>
+            <div class="disclaimer">
+                <p><strong>重要提示：</strong>本问卷旨在帮助您了解分手后的适应状况，结果仅供参考，不能替代专业心理评估。如果您感到持续困扰，建议寻求专业帮助。</p>
+            </div>
+        </header>
+
+        <main>
+            <!-- 说明部分 -->
+            <section id="instructions" class="card">
+                <h2><i class="fas fa-info-circle"></i> 测试说明</h2>
+                <p>请根据您在<strong>过去两周内</strong>的真实感受，评估每个描述与您的符合程度。</p>
+                <p>每个问题有5个选项：</p>
+                <div class="options-info">
+                    <div class="option-item"><span class="option-label">1</span> 完全不同意</div>
+                    <div class="option-item"><span class="option-label">2</span> 比较不同意</div>
+                    <div class="option-item"><span class="option-label">3</span> 中立</div>
+                    <div class="option-item"><span class="option-label">4</span> 比较同意</div>
+                    <div class="option-item"><span class="option-label">5</span> 完全同意</div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">请回答所有问题以获得准确结果</div>
+                </div>
+                <button id="start-btn" class="btn-primary">开始测试</button>
+            </section>
+
+            <!-- 问卷部分 -->
+            <section id="questionnaire" class="card hidden">
+                <h2><i class="fas fa-clipboard-list"></i> 分手适应力问卷</h2>
+                <div id="questions-container"></div>
+                <div class="navigation">
+                    <button id="prev-btn" class="btn-secondary"><i class="fas fa-arrow-left"></i> 上一题</button>
+                    <span id="page-info">第 <span id="current-page">1</span> 题 / 共 20 题</span>
+                    <button id="next-btn" class="btn-secondary">下一题 <i class="fas fa-arrow-right"></i></button>
+                </div>
+                <button id="submit-btn" class="btn-primary hidden">查看结果</button>
+            </section>
+
+            <!-- 结果部分 -->
+            <section id="results" class="card hidden">
+                <h2><i class="fas fa-chart-bar"></i> 测试结果</h2>
+                
+                <div class="score-category">
+                    <h3>您的分手适应力总分</h3>
+                    <div class="score-bar">
+                        <div id="total-bar" class="score-fill"></div>
+                    </div>
+                    <div class="score-details">
+                        <p>总分: <span id="total-score">0</span> / 100</p>
+                        <p>适应水平: <span id="adapt-level">中等</span></p>
+                        <p>百分位: <span id="percentile">-</span></p>
+                    </div>
+                </div>
+                
+                <div id="adapt-summary">
+                    <h3><i class="fas fa-heartbeat"></i> 适应力概述</h3>
+                    <div id="adapt-summary-content"></div>
+                </div>
+                
+                <div id="interpretation">
+                    <h3><i class="fas fa-comment-medical"></i> 结果解读</h3>
+                    <div id="interpretation-content"></div>
+                </div>
+                
+                <div id="recommendations">
+                    <h3><i class="fas fa-hands-helping"></i> 建议</h3>
+                    <div id="recommendations-content"></div>
+                </div>
+                
+                <div class="actions">
+                    <button id="restart-btn" class="btn-secondary"><i class="fas fa-redo"></i> 重新测试</button>
+                    <button id="print-btn" class="btn-secondary"><i class="fas fa-print"></i> 打印结果</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>分手适应力评估 - 基于心理适应力理论构建</p>
+            <p>参考: 分手后成长量表、Connor-Davidson韧性量表等</p>
+            <p>© 2023 心理健康工具 | 仅供教育参考使用</p>
+        </footer>
+    </div>
+
+    <script>
+        // 分手适应力问卷 (20题，包含反向计分)
+        const adaptQuestions = [
+            { id: 1, text: "我已经能够接受分手的事实。", reversed: false },
+            { id: 2, text: "我经常忍不住回想过去的美好时光，难以自拔。", reversed: true },
+            { id: 3, text: "我有可以倾诉和依靠的朋友或家人。", reversed: false },
+            { id: 4, text: "分手后，我的工作/学习效率明显下降。", reversed: true },
+            { id: 5, text: "我对未来的感情生活依然抱有希望。", reversed: false },
+            { id: 6, text: "我常常感到愤怒或怨恨，无法释怀。", reversed: true },
+            { id: 7, text: "我能够从这段关系中学习并成长。", reversed: false },
+            { id: 8, text: "我刻意回避与前任有关的一切（地点、物品、社交网络）。", reversed: true },
+            { id: 9, text: "我能够重新享受以前喜欢的活动。", reversed: false },
+            { id: 10, text: "我常常感到孤独和空虚。", reversed: true },
+            { id: 11, text: "我对自己恢复单身的状态感到自在。", reversed: false },
+            { id: 12, text: "分手后我难以入睡或睡眠质量差。", reversed: true },
+            { id: 13, text: "我能够理性分析分手的原因，而不是一味自责。", reversed: false },
+            { id: 14, text: "我仍然会关注前任的动态，并因此情绪波动。", reversed: true },
+            { id: 15, text: "我制定了新的个人目标，并为之努力。", reversed: false },
+            { id: 16, text: "我觉得自己不值得被爱。", reversed: true },
+            { id: 17, text: "我能够保持规律的饮食和生活习惯。", reversed: false },
+            { id: 18, text: "我常常幻想与前任复合。", reversed: true },
+            { id: 19, text: "我对自己克服困难的能力有信心。", reversed: false },
+            { id: 20, text: "分手这件事仍然严重影响我的情绪。", reversed: true }
+        ];
+
+        // 适应力等级 (总分范围20-100)
+        const adaptLevels = [
+            { min: 20, max: 45, level: "较低", class: "level-low", desc: "分手后适应困难，情绪困扰明显，可能需要更多时间和支持来恢复。" },
+            { min: 46, max: 70, level: "中等", class: "level-moderate", desc: "正在逐步适应，有一些情绪波动但总体可控，可以进一步巩固积极应对方式。" },
+            { min: 71, max: 100, level: "较高", class: "level-high", desc: "适应良好，能够积极面对分手并从中成长，具备较强的心理韧性。" }
+        ];
+
+        // 应用状态
+        let currentQuestion = 1;
+        let answers = new Array(adaptQuestions.length).fill(null);
+
+        // DOM元素
+        const instructionsSection = document.getElementById('instructions');
+        const questionnaireSection = document.getElementById('questionnaire');
+        const resultsSection = document.getElementById('results');
+        const questionsContainer = document.getElementById('questions-container');
+        const startBtn = document.getElementById('start-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const printBtn = document.getElementById('print-btn');
+        const currentPageSpan = document.getElementById('current-page');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('分手适应力评估初始化...');
+            
+            startBtn.addEventListener('click', startQuestionnaire);
+            prevBtn.addEventListener('click', goToPrevQuestion);
+            nextBtn.addEventListener('click', goToNextQuestion);
+            submitBtn.addEventListener('click', showResults);
+            restartBtn.addEventListener('click', restartQuestionnaire);
+            printBtn.addEventListener('click', printResults);
+            
+            renderQuestion();
+            updateProgress();
+        });
+
+        function startQuestionnaire() {
+            instructionsSection.classList.add('hidden');
+            questionnaireSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            currentQuestion = 1;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            questionsContainer.innerHTML = '';
+            const question = adaptQuestions[currentQuestion - 1];
+            
+            const questionElement = document.createElement('div');
+            questionElement.className = 'question';
+            questionElement.innerHTML = `
+                <div class="question-text">${question.id}. ${question.text}</div>
+                <div class="options">
+                    ${[1, 2, 3, 4, 5].map(value => `
+                        <label class="option ${answers[currentQuestion - 1] === value ? 'selected' : ''}">
+                            <input type="radio" name="question-${question.id}" value="${value}" 
+                                   ${answers[currentQuestion - 1] === value ? 'checked' : ''}>
+                            <span class="option-label">${value}</span> ${getOptionText(value)}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            
+            const radioInputs = questionElement.querySelectorAll('input[type="radio"]');
+            radioInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    answers[currentQuestion - 1] = parseInt(this.value);
+                    updateProgress();
+                    
+                    if (currentQuestion < adaptQuestions.length) {
+                        currentQuestion++;
+                        setTimeout(() => {
+                            renderQuestion();
+                        }, 300);
+                    } else {
+                        setTimeout(() => {
+                            renderQuestion();
+                        }, 300);
+                    }
+                });
+            });
+            
+            questionsContainer.appendChild(questionElement);
+            
+            if (currentPageSpan) currentPageSpan.textContent = currentQuestion;
+            
+            if (prevBtn) prevBtn.disabled = currentQuestion === 1;
+            if (nextBtn) nextBtn.disabled = currentQuestion === adaptQuestions.length;
+            if (submitBtn) {
+                submitBtn.classList.toggle('hidden', currentQuestion !== adaptQuestions.length);
+                
+                if (currentQuestion === adaptQuestions.length && answers[currentQuestion - 1] !== null) {
+                    submitBtn.disabled = false;
+                } else if (currentQuestion === adaptQuestions.length) {
+                    submitBtn.disabled = true;
+                }
+            }
+        }
+
+        function getOptionText(value) {
+            const texts = {
+                1: "完全不同意",
+                2: "比较不同意",
+                3: "中立",
+                4: "比较同意",
+                5: "完全同意"
+            };
+            return texts[value];
+        }
+
+        function updateProgress() {
+            const answeredCount = answers.filter(answer => answer !== null).length;
+            const totalQuestions = adaptQuestions.length;
+            const progressPercentage = (answeredCount / totalQuestions) * 100;
+            
+            if (progressFill) progressFill.style.width = `${progressPercentage}%`;
+            if (progressText) {
+                progressText.textContent = `已回答 ${answeredCount} / ${totalQuestions} 题`;
+                if (answeredCount === totalQuestions) {
+                    progressText.innerHTML = `<strong>所有问题已回答完毕！可以点击"查看结果"</strong>`;
+                }
+            }
+        }
+
+        function goToPrevQuestion() {
+            if (currentQuestion > 1) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        function goToNextQuestion() {
+            if (currentQuestion < adaptQuestions.length) {
+                currentQuestion++;
+                renderQuestion();
+            }
+        }
+
+        // 计算总分（考虑反向计分）
+        function calculateScore() {
+            let total = 0;
+            adaptQuestions.forEach((q, idx) => {
+                const answer = answers[idx];
+                if (answer !== null) {
+                    if (q.reversed) {
+                        // 反向计分：6 - 原始分
+                        total += (6 - answer);
+                    } else {
+                        total += answer;
+                    }
+                }
+            });
+            return total;
+        }
+
+        function getAdaptLevel(total) {
+            for (let level of adaptLevels) {
+                if (total >= level.min && total <= level.max) return level;
+            }
+            return adaptLevels[1]; // 默认中等
+        }
+
+        function showResults() {
+            const allAnswered = answers.every(answer => answer !== null);
+            if (!allAnswered) {
+                alert('请回答所有问题后再查看结果！');
+                return;
+            }
+            
+            const total = calculateScore();
+            const level = getAdaptLevel(total);
+            
+            document.getElementById('total-score').textContent = total;
+            document.getElementById('adapt-level').textContent = level.level;
+            
+            // 简单百分位估算（基于总分）
+            let percentile = '';
+            if (total <= 45) percentile = '低于25%人群';
+            else if (total <= 70) percentile = '约25%-75%人群';
+            else percentile = '高于75%人群';
+            document.getElementById('percentile').textContent = percentile;
+            
+            setTimeout(() => {
+                const totalBar = document.getElementById('total-bar');
+                if (totalBar) {
+                    totalBar.style.width = `${(total / 100) * 100}%`;
+                }
+            }, 100);
+            
+            generateAdaptSummary(total, level);
+            generateInterpretation(total, level);
+            generateRecommendations(total, level);
+            
+            questionnaireSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateAdaptSummary(total, level) {
+            const summaryContent = document.getElementById('adapt-summary-content');
+            summaryContent.innerHTML = `
+                <div class="adapt-card ${level.class}">
+                    <h3><i class="fas fa-chart-line"></i> 适应力水平: ${level.level}</h3>
+                    <p>${level.desc}</p>
+                </div>
+            `;
+        }
+
+        function generateInterpretation(total, level) {
+            const interpretationContent = document.getElementById('interpretation-content');
+            
+            // 简单维度分析：情绪、社交、自我成长、生活功能
+            // 粗略分组：问题1,2,6,10,14,18,20 情绪相关；3 社交；4,12,17 生活功能；5,7,13,15,16,19 自我成长。
+            // 这里为了简化，我们不做详细维度计算，只给一个综合解读。
+            
+            let html = `
+                <p>分手适应力反映个体从亲密关系结束中恢复的能力。总分范围20-100，分数越高表示适应越好。</p>
+                <div class="recommendation-item">
+                    <h4>总分解读</h4>
+                    <p>您的总分为 <strong>${total}</strong> 分，属于 <strong>${level.level}</strong> 适应水平。${level.desc}</p>
+                </div>
+            `;
+            
+            // 添加一些常见反应的解读
+            html += `<div class="recommendation-item"><h4>常见反应</h4><p>分手后的情绪波动、回忆闪回、生活功能暂时下降都是正常反应，通常会随时间缓解。适应力较高的人更能接纳这些感受并主动调整。</p></div>`;
+            
+            interpretationContent.innerHTML = html;
+        }
+
+        function generateRecommendations(total, level) {
+            const recommendationsContent = document.getElementById('recommendations-content');
+            let html = `
+                <div class="recommendation-item">
+                    <h4><i class="fas fa-heart"></i> 自我关怀</h4>
+                    <p>无论适应水平如何，照顾好自己的情绪和身体都很重要。保持规律作息，适当运动，允许自己感受悲伤但不沉溺其中。</p>
+                </div>
+            `;
+            
+            if (level.level === "较低") {
+                html += `
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-user-md"></i> 寻求支持</h4>
+                        <p>您目前可能经历较强烈的困扰。建议与信任的朋友、家人倾诉，或考虑寻求专业心理咨询师的支持。分手后的情绪需要时间愈合，不必独自承受。</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-pencil-alt"></i> 情绪表达</h4>
+                        <p>尝试写日记、绘画或音乐等方式表达情绪，这有助于释放内心压力。避免长时间独处或沉溺于负面思绪。</p>
+                    </div>
+                `;
+            } else if (level.level === "中等") {
+                html += `
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-leaf"></i> 巩固成长</h4>
+                        <p>您正在逐步恢复中，可以继续强化积极应对方式。参与社交活动、培养新兴趣爱好，有助于建立新的生活重心。</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-smile"></i> 自我肯定</h4>
+                        <p>肯定自己已经取得的进步，同时接纳偶尔的情绪波动。恢复不是线性的，允许自己有反复。</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-rocket"></i> 保持积极</h4>
+                        <p>您展现了良好的适应能力。继续保持健康的生活方式，将这段经历转化为个人成长的契机。未来您可以成为他人的支持资源。</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4><i class="fas fa-users"></i> 拓展社交</h4>
+                        <p>可以尝试拓展社交圈，结识新朋友，丰富生活经验。健康的社交关系能进一步提升幸福感。</p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="recommendation-item">
+                    <h4><i class="fas fa-book"></i> 推荐阅读</h4>
+                    <p>相关书籍：《分手后，成为更好的自己》、《心的重建》等，可以提供更多心理支持和方法。</p>
+                </div>
+            `;
+            
+            recommendationsContent.innerHTML = html;
+        }
+
+        function restartQuestionnaire() {
+            answers = new Array(adaptQuestions.length).fill(null);
+            currentQuestion = 1;
+            updateProgress();
+            resultsSection.classList.add('hidden');
+            instructionsSection.classList.remove('hidden');
+            instructionsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function printResults() {
+            const printWindow = window.open('', '_blank');
+            const total = calculateScore();
+            const level = getAdaptLevel(total);
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>分手适应力评估报告</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+                        h1, h2, h3 { color: #333; }
+                        .score-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        .score-table th, .score-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        .score-table th { background-color: #f2f2f2; }
+                        .adapt-box { padding: 15px; margin: 15px 0; border-radius: 8px; }
+                        .level-low { background-color: #f8d7da; border-left: 6px solid #dc3545; }
+                        .level-moderate { background-color: #fff3cd; border-left: 6px solid #ffc107; }
+                        .level-high { background-color: #d4edda; border-left: 6px solid #28a745; }
+                        .recommendation { background-color: #f8f9fa; padding: 15px; margin: 15px 0; }
+                        .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <h1>分手适应力评估报告</h1>
+                    <p><strong>测试日期：</strong> ${new Date().toLocaleDateString('zh-CN')}</p>
+                    
+                    <h2>总分</h2>
+                    <p><strong>总分：</strong> ${total} / 100</p>
+                    <p><strong>适应水平：</strong> ${level.level}</p>
+                    
+                    <h2>结果解读</h2>
+                    <div class="adapt-box ${level.class}">
+                        <p>${level.desc}</p>
+                    </div>
+                    
+                    <h2>建议</h2>
+                    <div class="recommendation">
+                        <p>根据您的适应水平，建议：</p>
+                        ${level.level === "较低" ? '<p>寻求亲友支持或专业帮助，表达情绪，给自己时间愈合。</p>' : ''}
+                        ${level.level === "中等" ? '<p>巩固积极应对方式，参与社交活动，培养新兴趣。</p>' : ''}
+                        ${level.level === "较高" ? '<p>保持健康生活，将经历转化为成长，拓展社交圈。</p>' : ''}
+                    </div>
+                    
+                    <h2>重要提示</h2>
+                    <div class="recommendation">
+                        <p>本问卷仅用于自我评估，不能替代专业心理诊断。如果情绪持续困扰，请寻求心理健康专业人士的帮助。</p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>分手适应力评估 - 基于心理适应力理论构建</p>
+                        <p>© ${new Date().getFullYear()} 心理健康工具 | 仅供教育参考使用</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => printWindow.print(), 250);
+        }
+    </script>
+</body>
+</html>
